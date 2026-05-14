@@ -10,6 +10,10 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Firebase SDKs (Cloud Database Integration) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <style>
         /* ==========================================================================
            1. LUXURY THEME VARIABLES & CORE SYSTEM
@@ -87,6 +91,7 @@
         .text-danger { color: var(--danger); }
         .fw-bold { font-weight: 700; }
         .text-center { text-align: center; }
+        
         .hidden { display: none !important; }
 
         /* ==========================================================================
@@ -164,9 +169,9 @@
             font-size: 14px; 
             backdrop-filter: blur(10px); 
             transition: 0.3s; 
+            outline: none;
         }
         .input-box:focus { 
-            outline: none; 
             border-color: var(--rose-gold); 
             background: rgba(0,0,0,0.8); 
             box-shadow: 0 0 15px rgba(197,123,136,0.2); 
@@ -237,6 +242,13 @@
         @keyframes pulse { 
             0%, 100% { transform: scale(1); } 
             50% { transform: scale(1.05); } 
+        }
+        
+        /* Premium Splash Animation */
+        @keyframes glowText {
+            0% { text-shadow: 0 0 10px rgba(212,175,55,0.2); transform: scale(1); }
+            50% { text-shadow: 0 0 30px rgba(212,175,55,0.8), 0 0 50px rgba(197, 123, 136, 0.6); transform: scale(1.05); }
+            100% { text-shadow: 0 0 10px rgba(212,175,55,0.2); transform: scale(1); }
         }
 
         /* ==========================================================================
@@ -312,7 +324,7 @@
         }
 
         /* ==========================================================================
-           4. MAIN APP LAYOUT (Header, Screens, Navigation, Sidebar)
+           4. MAIN APP LAYOUT (Header, Screens, Navigation)
            ========================================================================== */
         #main-app { 
             display: none; 
@@ -352,6 +364,7 @@
             cursor: pointer; 
             padding: 10px; 
             transition: 0.3s;
+            position: relative;
         }
         
         .header-icon:active { 
@@ -506,7 +519,7 @@
         }
 
         /* ==========================================================================
-           5. HOME SCREEN COMPONENTS (Sliders, Categories, Product Cards)
+           5. HOME SCREEN COMPONENTS
            ========================================================================== */
         
         /* Auto Sliding Hero Banner */
@@ -528,7 +541,7 @@
             flex-direction: column; 
             justify-content: flex-end; 
             padding: 40px 20px; 
-            cursor: pointer; /* Added cursor pointer */
+            cursor: pointer; 
         }
         
         .hero-slide.active { 
@@ -630,20 +643,6 @@
             cursor: pointer; 
             position: relative; 
             overflow: hidden; 
-        }
-        .promo-banner::before { 
-            content: ''; 
-            position: absolute; 
-            top: -50%; 
-            left: -50%; 
-            width: 200%; 
-            height: 200%; 
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); 
-            opacity: 0; 
-            transition: 0.5s; 
-        }
-        .promo-banner:hover::before { 
-            opacity: 1; 
         }
 
         /* Product Grids */
@@ -978,7 +977,6 @@
             box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
         }
 
-        /* Payment Options */
         .pay-option { 
             display: flex; 
             align-items: center; 
@@ -1040,7 +1038,6 @@
             width: 40px; 
         }
 
-        /* Order Tracking Timeline */
         .track-timeline { 
             padding: 25px 0 10px 25px; 
             border-left: 2px solid var(--glass-border); 
@@ -1197,98 +1194,42 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
 
-        /* ==========================================================================
-           10. OVERLAYS, MODALS & TOASTS
-           ========================================================================== */
-        .overlay { 
-            position: absolute; 
-            inset: 0; 
-            background: rgba(0,0,0,0.9); 
-            backdrop-filter: blur(10px); 
-            z-index: 2000; 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            flex-direction: column; 
-            opacity: 0; 
+        /* Edit Button in Admin */
+        .btn-edit {
+            background: rgba(212,175,55,0.1);
+            color: var(--gold-main);
+            border: 1px solid var(--gold-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
             transition: 0.3s;
+            font-weight: 600;
         }
-        .overlay.active { 
-            display: flex; 
-            opacity: 1; 
-        }
-        
-        .modal { 
-            background: var(--card-dark); 
-            width: 90%; 
-            max-height: 90%; 
-            border-radius: var(--border-radius-lg); 
-            overflow-y: auto; 
-            border: 1px solid var(--rose-gold); 
-            position: relative; 
-            transform: scale(0.95); 
-            transition: 0.3s; 
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
-        }
-        .overlay.active .modal { 
-            transform: scale(1); 
-        }
-        .btn-close { 
-            position: absolute; 
-            top: 15px; 
-            right: 15px; 
-            background: rgba(0,0,0,0.8); 
-            color: #fff; 
-            border: 1px solid var(--glass-border); 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            font-size: 18px; 
-            z-index: 10; 
-            cursor: pointer; 
-            transition: 0.3s;
-        }
-        .btn-close:active { 
-            transform: scale(0.9); 
-        }
+        .btn-edit:hover { background: var(--gold-main); color: #000; }
 
-        #toast-box { 
-            position: absolute; 
-            top: 90px; 
-            left: 0; 
-            right: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 12px; 
-            z-index: 5000; 
-            pointer-events: none; 
-        }
-        .toast-msg { 
-            background: var(--success); 
-            color: #000; 
-            padding: 16px 28px; 
-            border-radius: 30px; 
-            font-weight: 700; 
-            font-size: 14px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6); 
-            animation: fadeDown 0.3s, fadeOut 0.3s 2.7s forwards; 
-            display: flex; 
-            align-items: center; 
-            gap: 12px;
-        }
-        .toast-msg.error { 
-            background: var(--danger); 
-            color: #fff; 
-        }
-        @keyframes fadeDown { 
-            from { opacity: 0; transform: translateY(-30px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        @keyframes fadeOut { 
-            from { opacity: 1; } 
-            to { opacity: 0; } 
-        }
+        /* ==========================================================================
+           10. OVERLAYS, MODALS, NOTIFICATIONS & TOASTS
+           ========================================================================== */
+        .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: center; justify-content: center; flex-direction: column; opacity: 0; transition: 0.3s;}
+        .overlay.active { display: flex; opacity: 1; }
+        
+        /* Notification Overlay Panel */
+        .notif-panel { position: absolute; top: var(--header-h); right: 10px; width: 320px; max-height: 400px; background: var(--card-dark); border: 1px solid var(--gold-main); border-radius: 16px; z-index: 2500; display: none; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden;}
+        .notif-panel.active { display: flex; animation: fadeUp 0.3s; }
+        .notif-head { padding: 15px; border-bottom: 1px solid var(--glass-border); background: var(--card-light); display: flex; justify-content: space-between; align-items: center;}
+        .notif-list { padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;}
+
+        .modal { background: var(--card-dark); width: 90%; max-height: 90%; border-radius: var(--border-radius-lg); overflow-y: auto; border: 1px solid var(--rose-gold); position: relative; transform: scale(0.95); transition: 0.3s; box-shadow: 0 25px 60px rgba(0,0,0,0.8);}
+        .overlay.active .modal { transform: scale(1); }
+        .btn-close { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid var(--glass-border); width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 10; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center;}
+        .btn-close:active { transform: scale(0.9); }
+
+        #toast-box { position: absolute; top: 90px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 5000; pointer-events: none; }
+        .toast-msg { background: var(--success); color: #000; padding: 16px 28px; border-radius: 30px; font-weight: 700; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: fadeDown 0.3s, fadeOut 0.3s 2.7s forwards; display: flex; align-items: center; gap: 12px;}
+        .toast-msg.error { background: var(--danger); color: #fff; }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
     </style>
 </head>
@@ -1296,6 +1237,12 @@
 
 <div id="app-container">
     <div id="toast-box"></div>
+
+    <!-- PREMIUM SPLASH SCREEN (Runs on load) -->
+    <div id="splash-screen" style="position:fixed; inset:0; background:var(--bg-dark); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; transition: opacity 0.8s ease;">
+        <h1 class="playfair text-gold" style="font-size:42px; text-shadow: 0 0 25px rgba(212,175,55,0.6); letter-spacing:3px; animation: pulse 1.5s infinite;">CRAZY SILKS</h1>
+        <p class="text-pink" style="letter-spacing: 3px; font-size:12px; margin-top:15px; font-weight: 600;">PREMIUM SHOWROOM</p>
+    </div>
 
     <!-- 1. SIDEBAR (HAMBURGER MENU) -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="UI.toggleSidebar()"></div>
@@ -1333,6 +1280,17 @@
         </div>
     </div>
 
+    <!-- NOTIFICATION PANEL -->
+    <div class="notif-panel" id="notif-panel">
+        <div class="notif-head">
+            <h4 class="text-gold"><i class="fas fa-bell"></i> Alerts</h4>
+            <i class="fas fa-times text-muted" style="cursor:pointer;" onclick="Notif.toggle()"></i>
+        </div>
+        <div class="notif-list" id="notif-list">
+            <!-- Notifications inject here -->
+        </div>
+    </div>
+
     <!-- 3. SUCCESS & QUICK VIEW MODALS -->
     <div class="overlay" id="success-modal">
         <div class="modal" style="padding: 40px 20px; text-align: center; border-radius: 24px;">
@@ -1346,7 +1304,7 @@
     <div class="overlay" id="qv-modal">
         <div class="modal">
             <button class="btn-close" onclick="Utils.closeModal('qv-modal')"><i class="fas fa-times"></i></button>
-            <img id="qv-img" src="" style="width: 100%; height: 350px; object-fit: cover;">
+            <img id="qv-img" src="" style="width: 100%; height: 380px; object-fit: cover;">
             <div style="padding: 25px;">
                 <h3 id="qv-title" class="playfair text-pink" style="font-size: 22px; margin-bottom: 10px; line-height: 1.3;"></h3>
                 <div style="margin-bottom: 20px; display: flex; align-items: baseline; gap: 10px;">
@@ -1368,12 +1326,8 @@
                 <div class="auth-logo playfair">CRAZY SILKS</div>
                 <div class="auth-sub">Luxury Women & Kids Fashion</div>
                 
-                <div class="form-group">
-                    <input type="email" id="log-email" class="input-box" placeholder="Email Address">
-                </div>
-                <div class="form-group">
-                    <input type="password" id="log-pass" class="input-box" placeholder="Password">
-                </div>
+                <div class="form-group"><input type="email" id="log-email" class="input-box" placeholder="Email Address"></div>
+                <div class="form-group"><input type="password" id="log-pass" class="input-box" placeholder="Password"></div>
                 
                 <div style="text-align: right; margin-top: -5px; margin-bottom: 25px; font-size: 12px; color: var(--pink-accent); cursor: pointer; font-weight: 500;" onclick="Auth.switchView('forgot')">Forgot Password?</div>
                 <button class="btn-gold" onclick="Auth.login()">SECURE LOGIN</button>
@@ -1385,7 +1339,7 @@
             </div>
         </div>
 
-        <!-- Customer Register (Fully functional) -->
+        <!-- Customer Register -->
         <div id="register-view" class="auth-screen hidden">
             <div class="auth-container">
                 <div class="auth-logo playfair">JOIN US</div>
@@ -1419,8 +1373,8 @@
                 <div class="auth-logo text-gold playfair">ADMIN PORTAL</div>
                 <div class="text-center" style="color: var(--danger); font-size: 11px; margin-bottom: 25px; font-weight: 700; letter-spacing: 1px;">Authorized Access Only</div>
                 
-                <div class="form-group"><input type="email" id="admin-email" class="input-box" placeholder="Admin ID"></div>
-                <div class="form-group"><input type="password" id="admin-pass" class="input-box" placeholder="Master Password"></div>
+                <div class="form-group"><input type="email" id="admin-email" class="input-box" placeholder="Admin ID" value="admin@crazysilks.com"></div>
+                <div class="form-group"><input type="password" id="admin-pass" class="input-box" placeholder="Master Password" value="admin123"></div>
                 
                 <button class="btn-gold" onclick="Auth.adminLogin()" style="margin-top: 15px;">ENTER DASHBOARD</button>
                 <div class="auth-switch" onclick="Auth.switchView('login')">Back to <span>Customer App</span></div>
@@ -1430,11 +1384,17 @@
 
     <!-- ================= MAIN APP SYSTEM ================= -->
     <div id="main-app">
-        <!-- App Header -->
+        <!-- App Header with Notification Bell -->
         <header>
             <div class="header-icon" onclick="UI.toggleSidebar()"><i class="fas fa-bars"></i></div>
             <div class="brand-name playfair text-gold">CRAZY SILKS</div>
-            <div class="header-icon" onclick="UI.toggleSearch()"><i class="fas fa-search"></i></div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div class="header-icon" onclick="UI.toggleSearch()"><i class="fas fa-search"></i></div>
+                <div class="header-icon" style="position: relative;" onclick="Notif.toggle()">
+                    <i class="fas fa-bell"></i>
+                    <div class="badge-nav" id="notif-badge" style="display: none; top: 5px; right: 5px; width: 14px; height: 14px;">0</div>
+                </div>
+            </div>
         </header>
 
         <!-- 1. HOME SCREEN -->
@@ -1551,7 +1511,7 @@
             </div>
         </div>
 
-        <!-- 5. PROFILE SCREEN (Expanded) -->
+        <!-- 5. PROFILE SCREEN -->
         <div id="profile-screen" class="screen">
             <div class="prof-head">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200" class="prof-img">
@@ -1593,11 +1553,11 @@
             </div>
         </div>
 
-        <!-- ================= MASTER ADMIN PANEL (Expanded) ================= -->
+        <!-- ================= MASTER ADMIN PANEL ================= -->
         <div id="admin-screen" class="screen">
             <div class="admin-nav">
                 <div class="admin-tab active" onclick="Admin.tab('dash', this)">Overview</div>
-                <div class="admin-tab" onclick="Admin.tab('add', this)">Inventory</div>
+                <div class="admin-tab" onclick="Admin.tab('add', this)">Manage Inventory</div>
                 <div class="admin-tab" onclick="Admin.tab('orders', this)">Orders</div>
                 <div class="admin-tab" onclick="Admin.tab('crm', this)">CRM & Offers</div>
             </div>
@@ -1613,9 +1573,12 @@
                 </div>
             </div>
 
-            <!-- Add Product -->
+            <!-- Add/Edit Product -->
             <div id="admin-add" class="admin-sec">
-                <div class="section-title" style="padding-left:0;">ADD NEW PRODUCT</div>
+                <div class="section-title" style="padding-left:0;" id="ap-main-title">ADD / EDIT PRODUCT</div>
+                
+                <input type="hidden" id="ap-edit-id"> <!-- Hidden ID for Editing -->
+                
                 <div class="form-group"><div class="input-label">Product Name</div><input type="text" id="ap-name" class="input-box" placeholder="e.g. Royal Bridal Silk"></div>
                 <div class="form-group"><div class="input-label">Description & Fabric Details</div><textarea id="ap-desc" class="input-box" placeholder="Enter detailed description..."></textarea></div>
                 
@@ -1650,12 +1613,15 @@
                     <div class="cb-label" style="border-bottom:3px solid #000080" data-val="#000080" onclick="Admin.tCb(this)">Navy</div>
                 </div>
 
-                <div class="input-label">Media (Max 5 High-Res Images)</div>
-                <div class="upload-area" onclick="Admin.upImg()">
+                <div class="input-label">Media (Real Image Upload - Max 5)</div>
+                <div class="upload-area" onclick="Admin.triggerRealUpload()">
                     <i class="fas fa-cloud-upload-alt text-rose" style="font-size:36px; margin-bottom:15px;"></i>
-                    <div style="font-size:14px; font-weight:700;">Tap to Add Image</div>
+                    <div style="font-size:14px; font-weight:700;">Tap to Upload from Gallery</div>
                     <div style="font-size:11px; color:var(--text-muted); margin-top:5px;">Front, Back, Zoom, Lifestyle</div>
                 </div>
+                <!-- Hidden Real File Input -->
+                <input type="file" id="real-file-input" accept="image/*" multiple style="display: none;" onchange="Admin.handleRealUpload(event)">
+                
                 <div class="preview-grid" id="ap-img-grid"></div>
 
                 <div class="checkbox-group" style="margin-top: 30px;">
@@ -1663,9 +1629,14 @@
                 </div>
 
                 <div style="display:flex; gap:15px; margin-top:30px;">
-                    <button class="btn-outline" style="flex: 1;" onclick="Admin.preview()"><i class="fas fa-eye"></i> PREVIEW</button>
-                    <button class="btn-gold" style="flex: 1;" onclick="Admin.publish()"><i class="fas fa-check"></i> PUBLISH</button>
+                    <button class="btn-outline" style="flex: 1;" onclick="Admin.resetForm()"><i class="fas fa-times"></i> CLEAR</button>
+                    <button class="btn-gold" style="flex: 1;" id="btn-publish" onclick="Admin.publish()"><i class="fas fa-check"></i> PUBLISH</button>
                 </div>
+
+                <!-- Existing Products List for Editing -->
+                <div class="section-title" style="padding-left:0; margin-top: 50px;">MANAGE UPLOADED PRODUCTS</div>
+                <div id="admin-product-list" style="display: flex; flex-direction: column; gap: 15px;"></div>
+
             </div>
 
             <!-- Orders -->
@@ -1694,38 +1665,125 @@
 
 <script>
     /* ==========================================================================
-       ULTIMATE JAVASCRIPT ENGINE (OOP Based, Robust LocalStorage)
+       1. FIREBASE CLOUD INTEGRATION
        ========================================================================== */
-    
-    // --- 1. Database Architecture ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCxbqWdHJTDi8f8HP1JNFZjbQdzX65Y5zM",
+        authDomain: "crezy-silks.firebaseapp.com",
+        projectId: "crezy-silks",
+        storageBucket: "crezy-silks.firebasestorage.app",
+        messagingSenderId: "964815206242",
+        appId: "1:964815206242:web:1a118d7dad62b4261c9e3b"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const firestore = firebase.firestore();
+
+    /* ==========================================================================
+       2. ROBUST ASYNC DATABASE LOGIC (Instant Fallback + Cloud Sync)
+       ========================================================================== */
     class DB {
         static init() {
             return {
-                users: [{ name: 'Test User', email: 'test@gmail.com', pass: 'test1234', phone: '9876543210', address: '12, Main Road, Idappadi' }],
+                users: [{ name: 'Anantharaj', email: 'ananth@gmail.com', pass: 'ananth123', phone: '9876543210', address: '12, Main Road, Idappadi' }],
                 products: [
-                    { id: 1, sku: 'CS-BR-1001', name: "Royal Kanjeevaram Bridal Silk Saree", price: 15999, oldPrice: 22000, category: "Bridal Sarees", sizes: ["Free Size"], colors: ["#800000", "#D4AF37"], images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800", "https://images.unsplash.com/photo-1583391733958-61159136ca7e?w=800"], desc: "Authentic handwoven Kanjeevaram silk with pure gold zari work. The ultimate luxury bridal choice crafted in traditional looms.", stock: "Limited Edition", isOffer: false, rating: 4.9, date: Date.now()-10000 },
-                    { id: 2, sku: 'CS-LE-2005', name: "Heavy Maroon Velvet Designer Lehenga", price: 18500, oldPrice: 28000, category: "Lehengas", sizes: ["S", "M", "L"], colors: ["#800000", "#c57b88"], images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800"], desc: "Premium bridal wear with rich hand embroidery, zardosi work, and heavy tassels. Includes matching net dupatta.", stock: "In Stock", isOffer: true, rating: 4.8, date: Date.now()-5000 },
-                    { id: 3, sku: 'CS-KU-3044', name: "Pastel Elegance Kurti Set", price: 3499, oldPrice: 5999, category: "Kurtis", sizes: ["M", "L", "XL"], colors: ["#ffb6c1", "#FFFFFF"], images: ["https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800"], desc: "Soft pastel designer kurti paired with comfortable palazzo pants. Perfect for festive wear.", stock: "In Stock", isOffer: true, rating: 4.6, date: Date.now()-2000 },
-                    { id: 4, sku: 'CS-KD-4011', name: "Kids Traditional Pattu Pavadai", price: 2999, oldPrice: 4500, category: "Kids Ethnic Wear", sizes: ["2Y", "4Y", "6Y"], colors: ["#D4AF37", "#006400"], images: ["https://images.unsplash.com/photo-1518831959646-742c3e14ebf3?w=800"], desc: "Traditional pure silk pattu pavadai for little girls, featuring rich zari borders.", stock: "In Stock", isOffer: false, rating: 4.7, date: Date.now() }
+                    { id: 1, sku: 'CS-BR-1001', name: "Royal Kanjeevaram Bridal Silk Saree", price: 15999, oldPrice: 22000, category: "Bridal Sarees", sizes: ["Free Size"], colors: ["#800000", "#D4AF37"], images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800", "https://images.unsplash.com/photo-1583391733958-61159136ca7e?w=800"], desc: "Authentic handwoven Kanjeevaram silk with pure gold zari work.", stock: "Limited Edition", isOffer: false, rating: 4.9, date: Date.now()-10000 },
+                    { id: 2, sku: 'CS-LE-2005', name: "Heavy Maroon Velvet Designer Lehenga", price: 18500, oldPrice: 28000, category: "Lehengas", sizes: ["S", "M", "L"], colors: ["#800000", "#c57b88"], images: ["https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800"], desc: "Premium bridal wear with rich hand embroidery, zardosi work.", stock: "In Stock", isOffer: true, rating: 4.8, date: Date.now()-5000 },
+                    { id: 3, sku: 'CS-KU-3044', name: "Pastel Elegance Kurti Set", price: 3499, oldPrice: 5999, category: "Kurtis", sizes: ["M", "L", "XL"], colors: ["#ffb6c1", "#FFFFFF"], images: ["https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800"], desc: "Soft pastel designer kurti paired with comfortable palazzo pants.", stock: "In Stock", isOffer: true, rating: 4.6, date: Date.now()-2000 },
+                    { id: 4, sku: 'CS-KD-4011', name: "Kids Traditional Pattu Pavadai", price: 2999, oldPrice: 4500, category: "Kids Ethnic Wear", sizes: ["2Y", "4Y", "6Y"], colors: ["#D4AF37", "#006400"], images: ["https://images.unsplash.com/photo-1518831959646-742c3e14ebf3?w=800"], desc: "Traditional pure silk pattu pavadai for little girls.", stock: "In Stock", isOffer: false, rating: 4.7, date: Date.now() }
                 ],
-                orders: [{ id: 'ORD-9842', date: new Date().toLocaleDateString(), user: 'Test User', addr: '12, Main Road, Idappadi', total: 18500, method: 'GPAY', status: 'Shipped', items: [{product: {name: 'Heavy Maroon Velvet Designer Lehenga'}, qty: 1, size: 'M'}] }],
-                cart: [], wishlist: [], currentUser: null
+                orders: [{ id: 'ORD-9842', date: new Date().toLocaleDateString(), user: 'Anantharaj', addr: '12, Main Road, Idappadi', total: 18500, method: 'GPAY', status: 'Shipped', items: [{product: {name: 'Heavy Maroon Velvet Designer Lehenga'}, qty: 1, size: 'M'}] }],
+                cart: [], wishlist: [], currentUser: null, notifications: []
             };
         }
-        static load() { return JSON.parse(localStorage.getItem('crazySilksDB_V2')) || this.init(); }
-        static save(data) { localStorage.setItem('crazySilksDB_V2', JSON.stringify(data)); }
-    }
-    let db = DB.load();
 
-    // --- 2. Utils & Modals ---
+        static getLocal() {
+            let local = localStorage.getItem('crazySilks_Master');
+            return local ? JSON.parse(local) : this.init();
+        }
+
+        static save(data) {
+            localStorage.setItem('crazySilks_Master', JSON.stringify(data));
+            // Push to Firebase in background (doesn't block UI)
+            firestore.collection('crazysilks').doc('main_db').set(data)
+                .catch(err => console.log("Firebase sync warning:", err));
+        }
+
+        static async syncFromCloud() {
+            try {
+                const docSnap = await firestore.collection('crazysilks').doc('main_db').get();
+                if (docSnap.exists) {
+                    db = docSnap.data();
+                    localStorage.setItem('crazySilks_Master', JSON.stringify(db));
+                    // Re-render UI after cloud sync
+                    if(db.currentUser && db.currentUser.isAdmin) { Admin.init(); } 
+                    else { UI.renderHome(); }
+                }
+            } catch (e) {
+                console.log("Using LocalStorage Data.");
+            }
+        }
+    }
+
+    // Instantly load local data so UI is never blank
+    let db = DB.getLocal();
+
+    // --- 3. Notification Engine ---
+    class Notif {
+        static add(msg, targetUser = "All") {
+            if(!db.notifications) db.notifications = [];
+            db.notifications.unshift({ id: Date.now(), msg: msg, user: targetUser, read: false, date: new Date().toLocaleString() });
+            DB.save(db);
+            this.updateBadge();
+            if(targetUser === "All" || (db.currentUser && targetUser === db.currentUser.name)) Utils.toast("New Alert: " + msg, "success");
+        }
+        
+        static updateBadge() {
+            if(!db.currentUser) return;
+            const badge = document.getElementById('notif-badge');
+            const unread = (db.notifications || []).filter(n => (n.user === "All" || n.user === db.currentUser.name) && !n.read).length;
+            if(unread > 0) { badge.style.display = 'flex'; badge.innerText = unread > 9 ? '9+' : unread; }
+            else { badge.style.display = 'none'; }
+        }
+
+        static render() {
+            const list = document.getElementById('notif-list');
+            list.innerHTML = "";
+            let myNotifs = (db.notifications || []).filter(n => n.user === "All" || n.user === db.currentUser.name);
+            
+            if(myNotifs.length === 0) { list.innerHTML = "<div class='text-muted text-center' style='padding:20px;'>No new notifications</div>"; return; }
+            
+            myNotifs.forEach(n => {
+                list.innerHTML += `<div style="padding:15px; background:var(--card-light); border-radius:12px; border:1px solid var(--glass-border); display:flex; gap:15px; align-items:center;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(212,175,55,0.1); display:flex; align-items:center; justify-content:center;"><i class="fas fa-bell text-gold" style="font-size: 18px;"></i></div>
+                    <div style="flex:1;">
+                        <div style="font-size:13px; color:var(--text-white); font-weight: 500; line-height: 1.4;">${n.msg}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:5px;">${n.date}</div>
+                    </div>
+                    ${!n.read ? `<div style="width: 8px; height: 8px; border-radius: 50%; background: var(--danger);"></div>` : ''}
+                </div>`;
+                n.read = true; 
+            });
+            DB.save(db);
+            this.updateBadge();
+        }
+
+        static toggle() {
+            const panel = document.getElementById('notif-panel');
+            panel.classList.toggle('active');
+            if(panel.classList.contains('active')) this.render();
+        }
+    }
+    window.Notif = Notif;
+
+    // --- 4. Utils & Modals ---
     window.Utils = {
         toast: (msg, type="success") => {
-            const cont = document.getElementById('toast-box'); 
-            const el = document.createElement('div'); 
-            el.className = `toast-msg ${type}`;
+            const cont = document.getElementById('toast-box'); const el = document.createElement('div'); el.className = `toast-msg ${type}`;
             el.innerHTML = type==='success' ? `<i class="fas fa-check-circle"></i> ${msg}` : `<i class="fas fa-exclamation-circle"></i> ${msg}`;
-            cont.appendChild(el); 
-            setTimeout(() => el.remove(), 3000);
+            cont.appendChild(el); setTimeout(() => el.remove(), 3000);
         },
         fmt: (amt) => `₹${parseInt(amt).toLocaleString('en-IN')}`,
         showModal: (id) => document.getElementById(id).classList.add('active'),
@@ -1733,87 +1791,41 @@
     };
     window.openProductFromQV = () => { Utils.closeModal('qv-modal'); UI.open(UI.curProd.id); };
 
-    // --- 3. Authentication ---
+    // --- 5. Authentication ---
     class Auth {
-        static switchView(view) { 
-            document.querySelectorAll('.auth-screen').forEach(e => e.classList.add('hidden')); 
-            document.getElementById(view+'-view').classList.remove('hidden'); 
-        }
-        
+        static switchView(view) { document.querySelectorAll('.auth-screen').forEach(e => e.classList.add('hidden')); document.getElementById(view+'-view').classList.remove('hidden'); }
         static login() {
-            const e = document.getElementById('log-email').value;
-            const p = document.getElementById('log-pass').value;
-            
+            const e = document.getElementById('log-email').value, p = document.getElementById('log-pass').value;
             if(!e || !p) return Utils.toast("Enter Credentials", "error");
-            
             const u = db.users.find(x => x.email === e && x.pass === p);
             if(!u && e!=='test') return Utils.toast("Invalid Login", "error");
-            
-            db.currentUser = u || { name:'Guest User', email:e, address:'', phone: '', isAdmin:false }; 
-            DB.save(db);
-            Utils.toast("Login Successful"); 
-            App.start();
+            db.currentUser = u || { name:'Guest User', email:e, address:'', phone: '', isAdmin:false }; DB.save(db);
+            Utils.toast("Login Successful"); App.start();
         }
-        
         static register() {
-            const n = document.getElementById('reg-name').value;
-            const e = document.getElementById('reg-email').value;
-            const m = document.getElementById('reg-mobile').value;
-            const p = document.getElementById('reg-pass').value;
-            const cp = document.getElementById('reg-cpass').value;
-            
+            const n = document.getElementById('reg-name').value, e = document.getElementById('reg-email').value, m = document.getElementById('reg-mobile').value, p = document.getElementById('reg-pass').value, cp = document.getElementById('reg-cpass').value;
             if(!n || !e || !p || !cp || !m) return Utils.toast("Fill all fields", "error");
             if(p !== cp) return Utils.toast("Passwords do not match", "error");
             if(m.length < 10) return Utils.toast("Enter valid 10-digit mobile number", "error");
             if(db.users.find(x=>x.email===e)) return Utils.toast("Email already exists", "error");
 
-            db.users.push({ name:n, email:e, pass:p, phone:m, address:'' }); 
-            DB.save(db);
-            Utils.toast("Account Created! Please Login"); 
-            this.switchView('login');
+            db.users.push({ name:n, email:e, pass:p, phone:m, address:'' }); DB.save(db);
+            Utils.toast("Account Created! Please Login"); this.switchView('login');
         }
-        
         static adminLogin() {
-            const e = document.getElementById('admin-email').value;
-            const p = document.getElementById('admin-pass').value;
-            
+            const e = document.getElementById('admin-email').value, p = document.getElementById('admin-pass').value;
             if(e!=='admin@crazysilks.com' || p!=='admin123') return Utils.toast("Access Denied", "error");
-            
-            db.currentUser = { name:'Master Admin', email:e, isAdmin:true }; 
-            DB.save(db); 
-            Utils.toast("Admin Portal Unlocked"); 
-            App.start();
+            db.currentUser = { name:'Master Admin', email:e, isAdmin:true }; DB.save(db); Utils.toast("Admin Portal Unlocked"); App.start();
         }
-        
-        static logout() { 
-            db.currentUser = null; 
-            db.cart = []; 
-            DB.save(db); 
-            document.getElementById('main-app').style.display='none'; 
-            document.getElementById('auth-wrapper').style.display='block'; 
-            this.switchView('login'); 
-            clearInterval(UI.heroInt); 
-            UI.toggleSidebar(true); 
-        }
-        
-        static updateProfile() { 
-            db.currentUser.name = document.getElementById('edit-name').value; 
-            db.currentUser.phone = document.getElementById('edit-phone').value; 
-            db.currentUser.address = document.getElementById('edit-addr').value; 
-            document.getElementById('prof-name').innerText = db.currentUser.name; 
-            DB.save(db); 
-            Utils.toast("Profile Saved!"); 
-        }
+        static logout() { db.currentUser = null; db.cart = []; DB.save(db); document.getElementById('main-app').style.display='none'; document.getElementById('auth-wrapper').style.display='block'; this.switchView('login'); clearInterval(UI.heroInt); UI.toggleSidebar(true); document.getElementById('notif-panel').classList.remove('active');}
+        static updateProfile() { db.currentUser.name = document.getElementById('edit-name').value; db.currentUser.phone = document.getElementById('edit-phone').value; db.currentUser.address = document.getElementById('edit-addr').value; document.getElementById('prof-name').innerText = db.currentUser.name; DB.save(db); Utils.toast("Profile Saved!"); }
     }
     window.Auth = Auth;
 
-    // --- 4. Main UI Controller ---
+    // --- 6. Main UI Controller ---
     class UI {
         static catList = ["All", "Bridal Sarees", "Silk Sarees", "Lehengas", "Kurtis", "Kids Ethnic Wear", "Western Wear"];
-        static curProd = null; 
-        static tempSz = ""; 
-        static tempCol = ""; 
-        static heroInt;
+        static curProd = null; static tempSz = ""; static tempCol = ""; static heroInt;
 
         static toggleSidebar(forceClose = false) { 
             const s = document.getElementById('sidebar'), o = document.getElementById('sidebar-overlay');
@@ -1823,206 +1835,113 @@
         
         static toggleSearch() { 
             document.getElementById('search-overlay').classList.toggle('active'); 
-            document.getElementById('search-input').value=''; 
-            document.getElementById('search-results').innerHTML='';
+            document.getElementById('search-input').value=''; document.getElementById('search-results').innerHTML='';
         }
         
-        // Search Engine Logic
         static doSearch(val) {
-            const cont = document.getElementById('search-results'); 
-            cont.innerHTML = ''; 
-            if(!val) return;
-            
+            const cont = document.getElementById('search-results'); cont.innerHTML = ''; if(!val) return;
             const res = db.products.filter(p => p.name.toLowerCase().includes(val.toLowerCase()) || p.category.toLowerCase().includes(val.toLowerCase()));
-            
             if(!res.length) return cont.innerHTML = `<div class="text-muted">No products found.</div>`;
-            
             res.forEach(p => {
-                cont.innerHTML += `
-                <div onclick="Utils.closeModal('search-overlay'); UI.open(${p.id})" style="padding:15px; background:var(--card-light); border-radius:12px; border:1px solid var(--glass-border); display:flex; gap:15px; align-items:center; cursor:pointer;">
-                    <img src="${p.images[0]}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">
-                    <div>
-                        <div style="font-size:13px;color:var(--pink-accent); font-weight:500;">${p.name}</div>
-                        <div style="font-size:15px;color:var(--gold-main); font-weight:700;">${Utils.fmt(p.price)}</div>
-                    </div>
-                </div>`;
+                cont.innerHTML += `<div onclick="Utils.closeModal('search-overlay'); UI.open(${p.id})" style="padding:15px; background:var(--card-light); border-radius:12px; border:1px solid var(--glass-border); display:flex; gap:15px; align-items:center; cursor:pointer;"><img src="${p.images[0]}" style="width:50px;height:50px;object-fit:cover;border-radius:8px;"><div><div style="font-size:13px;color:var(--pink-accent); font-weight:500;">${p.name}</div><div style="font-size:15px;color:var(--gold-main); font-weight:700;">${Utils.fmt(p.price)}</div></div></div>`;
             });
         }
 
         static buildNav() {
             const nav = document.getElementById('bottom-nav');
             if(db.currentUser.isAdmin) {
-                nav.innerHTML = `
-                    <div class="nav-btn active" id="nav-admin" onclick="App.nav('admin')"><i class="fas fa-shield-alt"></i>Dashboard</div>
-                    <div class="nav-btn" id="nav-home" onclick="App.nav('home')"><i class="fas fa-store"></i>Store Preview</div>`;
+                nav.innerHTML = `<div class="nav-btn active" id="nav-admin" onclick="App.nav('admin')"><i class="fas fa-shield-alt"></i>Dashboard</div><div class="nav-btn" id="nav-home" onclick="App.nav('home')"><i class="fas fa-store"></i>Store Preview</div>`;
             } else {
-                nav.innerHTML = `
-                    <div class="nav-btn active" id="nav-home" onclick="App.nav('home')"><i class="fas fa-home"></i>Home</div>
-                    <div class="nav-btn" id="nav-wishlist" onclick="App.nav('wishlist')"><i class="fas fa-heart"></i>Wishlist</div>
-                    <div class="nav-btn" id="nav-cart" onclick="App.nav('cart')">
-                        <div class="badge-nav" id="nav-cart-cnt">${db.cart.length}</div>
-                        <i class="fas fa-shopping-bag"></i>Bag
-                    </div>
-                    <div class="nav-btn" id="nav-profile" onclick="App.nav('profile')"><i class="fas fa-user"></i>Profile</div>`;
+                nav.innerHTML = `<div class="nav-btn active" id="nav-home" onclick="App.nav('home')"><i class="fas fa-home"></i>Home</div><div class="nav-btn" id="nav-wishlist" onclick="App.nav('wishlist')"><i class="fas fa-heart"></i>Wishlist</div><div class="nav-btn" id="nav-cart" onclick="App.nav('cart')"><div class="badge-nav" id="nav-cart-cnt">${db.cart.length}</div><i class="fas fa-shopping-bag"></i>Bag</div><div class="nav-btn" id="nav-profile" onclick="App.nav('profile')"><i class="fas fa-user"></i>Profile</div>`;
             }
         }
 
         static renderHome() {
-            const cc = document.getElementById('cat-scroll'); 
-            cc.innerHTML = "";
+            const cc = document.getElementById('cat-scroll'); cc.innerHTML = "";
             this.catList.forEach((c,i) => cc.innerHTML += `<div class="cat-chip ${i===0?'active':''}" onclick="UI.filtCat('${c}', this)">${c}</div>`);
             
-            // Hero Slider Logic
             const hBanners = [
                 { i:'https://images.unsplash.com/photo-1583391733958-61159136ca7e?w=800', t:'LUXURY BRIDAL', s:'ELEVATE YOUR STYLE', pid: 1}, 
                 { i:'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800', t:'NEW KURTIS', s:'FESTIVE COLLECTION', pid: 3}
             ];
             
-            const hs = document.getElementById('hero-slider'); 
-            hs.innerHTML = "";
+            const hs = document.getElementById('hero-slider'); hs.innerHTML = "";
             hBanners.forEach((b,i) => {
-                hs.innerHTML += `
-                <div class="hero-slide ${i===0?'active':''}" style="background-image:url('${b.i}')" onclick="UI.open(${b.pid})">
-                    <div class="hero-overlay"></div>
-                    <h2 class="hero-title">${b.t}</h2>
-                    <p class="hero-sub">${b.s}</p>
-                </div>`;
+                hs.innerHTML += `<div class="hero-slide ${i===0?'active':''}" style="background-image:url('${b.i}')" onclick="UI.open(${b.pid})"><div class="hero-overlay"></div><h2 class="hero-title">${b.t}</h2><p class="hero-sub">${b.s}</p></div>`;
             });
             
-            let hc = 0; 
-            const sld = document.querySelectorAll('.hero-slide'); 
-            clearInterval(this.heroInt);
-            this.heroInt = setInterval(() => { 
-                sld[hc].classList.remove('active'); 
-                hc = (hc+1)%sld.length; 
-                sld[hc].classList.add('active'); 
-            }, 3500);
+            let hc = 0; const sld = document.querySelectorAll('.hero-slide'); clearInterval(this.heroInt);
+            this.heroInt = setInterval(() => { sld[hc].classList.remove('active'); hc = (hc+1)%sld.length; sld[hc].classList.add('active'); }, 3500);
 
-            this.rGrid(db.products, 'main-grid'); 
-            this.rGrid(db.products.filter(p=>p.isOffer), 'flash-grid', true);
+            this.rGrid(db.products, 'main-grid'); this.rGrid(db.products.filter(p=>p.isOffer), 'flash-grid', true);
         }
 
-        static filtCat(c, el) { 
-            document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active')); 
-            el.classList.add('active'); 
-            this.rGrid(c==='All'?db.products:db.products.filter(p=>p.category===c), 'main-grid'); 
-        }
+        static filtCat(c, el) { document.querySelectorAll('.cat-chip').forEach(x=>x.classList.remove('active')); el.classList.add('active'); this.rGrid(c==='All'?db.products:db.products.filter(p=>p.category===c), 'main-grid'); }
 
         static rGrid(data, cid, horiz=false) {
-            const c = document.getElementById(cid); 
-            c.innerHTML = "";
+            const c = document.getElementById(cid); c.innerHTML = "";
             if(!data.length) return c.innerHTML = `<div style="grid-column:1/-1; color:gray; text-align:center;">No items found.</div>`;
             
             data.forEach(p => {
                 let f = db.wishlist.includes(p.id) ? 'active' : '';
-                c.innerHTML += `
-                <div class="product-card">
+                c.innerHTML += `<div class="product-card">
                     ${p.isOffer?`<div class="badge-offer">SALE</div>`:''}
                     <div class="btn-fav ${f}" onclick="UI.fav(${p.id}, event)"><i class="${f?'fas':'far'} fa-heart"></i></div>
-                    <div class="p-img-wrap" onclick="UI.open(${p.id})">
-                        <img src="${p.images[0]}">
-                    </div>
-                    <div class="p-info" onclick="UI.open(${p.id})">
-                        <div>
-                            <div class="p-title">${p.name}</div>
-                            <div class="p-rating"><i class="fas fa-star"></i> ${p.rating}</div>
-                        </div>
-                        <div class="p-price-row">
-                            <span class="p-price">${Utils.fmt(p.price)}</span>
-                            <span class="p-old">${Utils.fmt(p.oldPrice)}</span>
-                        </div>
-                    </div>
+                    <div class="p-img-wrap" onclick="UI.open(${p.id})"><img src="${p.images[0]}"></div>
+                    <div class="p-info" onclick="UI.open(${p.id})"><div><div class="p-title">${p.name}</div><div class="p-rating"><i class="fas fa-star"></i> ${p.rating}</div></div><div class="p-price-row"><span class="p-price">${Utils.fmt(p.price)}</span><span class="p-old">${Utils.fmt(p.oldPrice)}</span></div></div>
                 </div>`;
             });
         }
 
         static fav(id, e) { 
             e.stopPropagation(); 
-            if(db.wishlist.includes(id)) db.wishlist=db.wishlist.filter(x=>x!==id); 
-            else db.wishlist.push(id); 
-            DB.save(db); 
-            
-            this.rGrid(db.products, 'main-grid'); 
+            if(db.wishlist.includes(id)) db.wishlist=db.wishlist.filter(x=>x!==id); else db.wishlist.push(id); 
+            DB.save(db); this.rGrid(db.products, 'main-grid'); 
             if(document.getElementById('wishlist-screen').classList.contains('active')) this.rWish(); 
             Utils.toast(db.wishlist.includes(id)?"Added to Wishlist":"Removed from Wishlist", "success"); 
         }
 
-        static rWish() { 
-            const favs = db.products.filter(p=>db.wishlist.includes(p.id)); 
-            document.getElementById('wish-count').innerText = `${favs.length} items saved`; 
-            this.rGrid(favs, 'wishlist-grid'); 
-        }
+        static rWish() { const favs = db.products.filter(p=>db.wishlist.includes(p.id)); document.getElementById('wish-count').innerText = `${favs.length} items saved`; this.rGrid(favs, 'wishlist-grid'); }
 
         static open(id, isPreview=false) {
             const p = isPreview ? id : db.products.find(x=>x.id===id); 
+            if(!p) return;
             this.curProd = p;
             
             const btn = document.getElementById('det-add-btn');
-            if(isPreview||db.currentUser.isAdmin) { 
-                btn.innerText = "PREVIEW MODE"; btn.style.background = "var(--card-light)"; btn.style.color="gray"; 
-            } else { 
-                btn.innerText = "ADD TO BAG"; btn.style.background = "var(--gold-gradient)"; btn.style.color="#000"; 
-            }
+            if(isPreview||db.currentUser.isAdmin) { btn.innerText = "PREVIEW MODE"; btn.style.background = "var(--card-light)"; btn.style.color="gray"; } 
+            else { btn.innerText = "ADD TO BAG"; btn.style.background = "var(--gold-gradient)"; btn.style.color="#000"; }
             
-            document.getElementById('det-title').innerText=p.name; 
-            document.getElementById('det-rating').innerHTML=`<i class="fas fa-star"></i> ${p.rating} | Genuine Collection`; 
-            document.getElementById('det-price').innerText=Utils.fmt(p.price); 
-            document.getElementById('det-old').innerText=Utils.fmt(p.oldPrice); 
-            document.getElementById('det-off').innerText=`${Math.round((p.oldPrice-p.price)/p.oldPrice*100)}% OFF`; 
-            document.getElementById('det-desc').innerText=p.desc; 
-            document.getElementById('det-sku').innerText=`SKU: ${p.sku}`;
+            document.getElementById('det-title').innerText=p.name; document.getElementById('det-rating').innerHTML=`<i class="fas fa-star"></i> ${p.rating} | Genuine Collection`; document.getElementById('det-price').innerText=Utils.fmt(p.price); document.getElementById('det-old').innerText=Utils.fmt(p.oldPrice); document.getElementById('det-off').innerText=`${Math.round((p.oldPrice-p.price)/p.oldPrice*100)}% OFF`; document.getElementById('det-desc').innerText=p.desc; document.getElementById('det-sku').innerText=`SKU: ${p.sku}`;
+            let st=document.getElementById('det-stock'); st.innerText=p.stock; st.style.background=p.stock==='In Stock'?'rgba(0,230,118,0.15)':'rgba(255,76,76,0.15)'; st.style.color=p.stock==='In Stock'?'var(--success)':'var(--danger)';
+            let fv=document.getElementById('det-fav'); fv.className = db.wishlist.includes(p.id) ? 'btn-fav active' : 'btn-fav';
             
-            let st=document.getElementById('det-stock'); 
-            st.innerText=p.stock; 
-            st.style.background=p.stock==='In Stock'?'rgba(0,230,118,0.15)':'rgba(255,76,76,0.15)'; 
-            st.style.color=p.stock==='In Stock'?'var(--success)':'var(--danger)';
+            let tr=document.getElementById('det-img-track'); tr.innerHTML=""; 
+            p.images.forEach((img)=>{ tr.innerHTML+=`<div class="det-slide"><img src="${img}"></div>`; });
             
-            let fv=document.getElementById('det-fav'); 
-            fv.className = db.wishlist.includes(p.id) ? 'btn-fav active' : 'btn-fav';
+            let sz=document.getElementById('det-sizes'); sz.innerHTML=""; 
+            p.sizes.forEach((s,i)=>{ if(i===0)this.tempSz=s; sz.innerHTML+=`<div class="var-pill ${i===0?'active':''}" onclick="UI.sel('s',this,'${s}')">${s}</div>`; });
             
-            let tr=document.getElementById('det-img-track'); 
-            tr.innerHTML=""; 
-            p.images.forEach((img)=>{ 
-                tr.innerHTML+=`<div class="det-slide"><img src="${img}"></div>`; 
-            });
-            
-            let sz=document.getElementById('det-sizes'); 
-            sz.innerHTML=""; 
-            p.sizes.forEach((s,i)=>{ 
-                if(i===0)this.tempSz=s; 
-                sz.innerHTML+=`<div class="var-pill ${i===0?'active':''}" onclick="UI.sel('s',this,'${s}')">${s}</div>`; 
-            });
-            
-            let cl=document.getElementById('det-colors'); 
-            cl.innerHTML=""; 
-            p.colors.forEach((c,i)=>{ 
-                if(i===0)this.tempCol=c; 
-                cl.innerHTML+=`<div class="var-color ${i===0?'active':''}" style="background-color:${c}" onclick="UI.sel('c',this,'${c}')"></div>`; 
-            });
+            let cl=document.getElementById('det-colors'); cl.innerHTML=""; 
+            p.colors.forEach((c,i)=>{ if(i===0)this.tempCol=c; cl.innerHTML+=`<div class="var-color ${i===0?'active':''}" style="background-color:${c}" onclick="UI.sel('c',this,'${c}')"></div>`; });
 
             App.nav('detail');
         }
 
         static sel(t,el,v) { 
-            document.querySelectorAll(t==='s'?'.var-pill':'.var-color').forEach(x=>x.classList.remove('active')); 
-            el.classList.add('active'); 
+            document.querySelectorAll(t==='s'?'.var-pill':'.var-color').forEach(x=>x.classList.remove('active')); el.classList.add('active'); 
             if(t==='s')this.tempSz=v; else this.tempCol=v; 
         }
         
         static rProf() {
-            document.getElementById('prof-name').innerText=db.currentUser.name; 
-            document.getElementById('prof-email').innerText=db.currentUser.email;
-            document.getElementById('edit-name').value=db.currentUser.name; 
-            document.getElementById('edit-phone').value=db.currentUser.phone||''; 
-            document.getElementById('edit-addr').value=db.currentUser.address||'';
+            document.getElementById('prof-name').innerText=db.currentUser.name; document.getElementById('prof-email').innerText=db.currentUser.email;
+            document.getElementById('edit-name').value=db.currentUser.name; document.getElementById('edit-phone').value=db.currentUser.phone||''; document.getElementById('edit-addr').value=db.currentUser.address||'';
             
-            const oc = document.getElementById('prof-orders'); 
-            oc.innerHTML="";
+            const oc = document.getElementById('prof-orders'); oc.innerHTML="";
             let uo = db.orders.filter(o=>o.user===db.currentUser.name);
             
-            if(!uo.length) {
-                oc.innerHTML=`<div class="text-muted text-center" style="margin-bottom:20px;">No recent orders.</div>`;
-            } else {
+            if(!uo.length) { oc.innerHTML=`<div class="text-muted text-center" style="margin-bottom:20px;">No recent orders.</div>`; } 
+            else {
                 uo.forEach(o => {
                     oc.innerHTML += `
                     <div style="background:var(--card-light); border:1px solid var(--glass-border); border-radius:16px; padding:20px; margin-bottom:15px;">
@@ -2043,37 +1962,30 @@
     }
     window.UI = UI;
 
-    // --- 5. Cart Engine ---
+    // --- 7. Cart Engine ---
     class Cart {
         static add() {
             if(db.currentUser.isAdmin || document.getElementById('det-add-btn').innerText.includes("PREVIEW")) return Utils.toast("Cannot add in preview mode", "error");
             
-            db.cart.push({ id: Date.now(), product: UI.curProd, size: UI.tempSz, color: UI.tempCol, qty: 1 }); 
-            DB.save(db);
-            document.getElementById('nav-cart-cnt').innerText = db.cart.length; 
-            Utils.toast("Item Added to Bag!"); 
-            App.nav('home');
+            db.cart.push({ id: Date.now(), product: UI.curProd, size: UI.tempSz, color: UI.tempCol, qty: 1 }); DB.save(db);
+            document.getElementById('nav-cart-cnt').innerText = db.cart.length; Utils.toast("Item Added to Bag!"); App.nav('home');
         }
         
         static render() {
-            const cl = document.getElementById('cart-list'); 
-            cl.innerHTML = ""; 
-            let tot=0;
+            const cl = document.getElementById('cart-list'); cl.innerHTML = ""; let tot=0;
             
             if(!db.cart.length) { 
-                cl.innerHTML = `<div class="text-center text-muted" style="padding:60px 20px;"><i class="fas fa-shopping-bag text-muted" style="font-size:60px; margin-bottom:20px; opacity:0.3;"></i><div>Your bag is empty</div></div>`; 
-                document.getElementById('checkout-panel').style.display='none'; 
+                cl.innerHTML = `<div class="text-center text-muted" style="padding:60px 20px;"><i class="fas fa-shopping-bag text-muted" style="font-size:60px; margin-bottom:20px; opacity:0.3;"></i><div>Your bag is empty</div></div>`; document.getElementById('checkout-panel').style.display='none'; 
             } else {
                 document.getElementById('checkout-panel').style.display='block';
                 db.cart.forEach((i,x) => {
-                    let st = i.product.price*i.qty; 
-                    tot+=st;
+                    let st = i.product.price*i.qty; tot+=st;
                     cl.innerHTML += `
                     <div class="cart-item">
                         <img src="${i.product.images[0]}">
                         <div style="flex:1;">
                             <div style="font-size:14px;font-weight:600;color:var(--pink-accent);margin-bottom:8px;line-height:1.3;">${i.product.name}</div>
-                            <div style="font-size:12px;color:gray;">Size: <span class="text-white">${i.size}</span></div>
+                            <div style="font-size:12px;color:gray;">Size: <span class="text-white">${i.size}</span> | Color: <span style="display:inline-block; width:12px; height:12px; background:${i.color}; border-radius:50%; vertical-align:middle;"></span></div>
                             <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px;">
                                 <span class="text-gold fw-bold" style="font-size:18px;">${Utils.fmt(st)}</span>
                                 <div class="qty-box">
@@ -2087,80 +1999,73 @@
                     </div>`;
                 });
             }
-            document.getElementById('cart-sub').innerText = Utils.fmt(tot); 
-            document.getElementById('cart-total').innerText = Utils.fmt(tot);
+            document.getElementById('cart-sub').innerText = Utils.fmt(tot); document.getElementById('cart-total').innerText = Utils.fmt(tot);
         }
         
-        static upd(x,v) { 
-            if(db.cart[x].qty+v>0) { db.cart[x].qty+=v; DB.save(db); this.render(); } 
-        }
-        static rem(x) { 
-            db.cart.splice(x,1); DB.save(db); document.getElementById('nav-cart-cnt').innerText=db.cart.length; this.render(); 
-        }
+        static upd(x,v) { if(db.cart[x].qty+v>0) { db.cart[x].qty+=v; DB.save(db); this.render(); } }
+        static rem(x) { db.cart.splice(x,1); DB.save(db); document.getElementById('nav-cart-cnt').innerText=db.cart.length; this.render(); }
         
         static checkout() {
-            if(!db.currentUser.address) { 
-                Utils.toast("Please add delivery address in Profile", "error"); 
-                return App.nav('profile'); 
-            }
+            if(!db.currentUser.address) { Utils.toast("Please add delivery address in Profile", "error"); return App.nav('profile'); }
             let pMode = document.querySelector('input[name="pay_mode"]:checked').value;
             let btn = document.getElementById('btn-checkout');
             
-            btn.innerHTML = pMode==='GPAY' ? `<i class="fas fa-circle-notch fa-spin"></i> SECURING GPAY...` : `<i class="fas fa-circle-notch fa-spin"></i> PLACING ORDER...`; 
-            btn.style.pointerEvents='none';
+            btn.innerHTML = pMode==='GPAY' ? `<i class="fas fa-circle-notch fa-spin"></i> SECURING GPAY...` : `<i class="fas fa-circle-notch fa-spin"></i> PLACING ORDER...`; btn.style.pointerEvents='none';
 
             setTimeout(() => {
                 let t = db.cart.reduce((s,i)=>s+(i.product.price*i.qty),0);
                 db.orders.unshift({ id:`ORD-${Math.floor(1000+Math.random()*9000)}`, date:new Date().toLocaleDateString(), user:db.currentUser.name, addr:db.currentUser.address, total:t, method:pMode, status:'Confirmed', items:[...db.cart] });
                 
-                db.cart=[]; 
-                DB.save(db); 
-                document.getElementById('nav-cart-cnt').innerText=0;
-                
+                Notif.add("New Order Received from " + db.currentUser.name + "!", "Master Admin");
+
+                db.cart=[]; DB.save(db); document.getElementById('nav-cart-cnt').innerText=0;
                 document.getElementById('success-method').innerText = pMode==='GPAY' ? "Google Pay (UPI)" : "Cash on Delivery";
-                Utils.showModal('success-modal'); 
-                
-                btn.innerHTML="PLACE ORDER"; 
-                btn.style.pointerEvents='auto';
+                Utils.showModal('success-modal'); btn.innerHTML="PLACE ORDER"; btn.style.pointerEvents='auto';
             }, 1800);
         }
     }
     window.Cart = Cart;
 
-    // --- 6. Admin Engine ---
+    // --- 8. Admin Engine (With Real File Upload & Edit) ---
     class Admin {
         static imgs = [];
-        static tab(id, el) { 
-            document.querySelectorAll('.admin-sec').forEach(s=>s.classList.remove('active')); 
-            document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); 
-            document.getElementById('admin-'+id).classList.add('active'); 
-            el.classList.add('active'); 
-        }
-        
+        static editingId = null;
+
+        static tab(id, el) { document.querySelectorAll('.admin-sec').forEach(s=>s.classList.remove('active')); document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active')); document.getElementById('admin-'+id).classList.add('active'); el.classList.add('active'); }
         static init() {
             document.getElementById('st-rev').innerText = Utils.fmt(db.orders.reduce((s,o)=>s+o.total,0));
-            document.getElementById('st-ord').innerText = db.orders.length; 
-            document.getElementById('st-prod').innerText = db.products.length; 
-            document.getElementById('st-usr').innerText = db.users.length;
-            this.rOrders(); 
-            this.rCust();
+            document.getElementById('st-ord').innerText = db.orders.length; document.getElementById('st-prod').innerText = db.products.length; document.getElementById('st-usr').innerText = db.users.length;
+            this.rOrders(); this.rCust(); this.rProducts();
         }
         
         static tCb(el) { el.classList.toggle('selected'); }
         
-        static upImg() {
-            const arr = ["https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=400", "https://images.unsplash.com/photo-1583391265517-35bbbad01281?w=400", "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400"];
-            if(this.imgs.length>=5) return Utils.toast("Max 5 Images Allowed", "error");
-            this.imgs.push(arr[this.imgs.length%arr.length]); 
-            this.rImgs();
+        // REAL GALLERY UPLOAD LOGIC
+        static triggerRealUpload() {
+            document.getElementById('real-file-input').click();
+        }
+
+        static handleRealUpload(event) {
+            let files = Array.from(event.target.files);
+            if(this.imgs.length + files.length > 5) {
+                Utils.toast("Max 5 Images Allowed", "error");
+                return;
+            }
+            files.forEach(file => {
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    this.imgs.push(e.target.result); // Base64 Data URL
+                    this.rImgs();
+                };
+                reader.readAsDataURL(file);
+            });
+            // Reset input so same file can be selected again if removed
+            document.getElementById('real-file-input').value = "";
         }
         
         static rImgs() { 
-            const g=document.getElementById('ap-img-grid'); 
-            g.innerHTML=""; 
-            this.imgs.forEach((u,i)=>{ 
-                g.innerHTML+=`<div class="preview-item" style="background-image:url('${u}')"><div class="remove-img" onclick="Admin.rmImg(${i})"><i class="fas fa-times"></i></div></div>`; 
-            }); 
+            const g=document.getElementById('ap-img-grid'); g.innerHTML=""; 
+            this.imgs.forEach((u,i)=>{ g.innerHTML+=`<div class="preview-item" style="background-image:url('${u}')"><div class="remove-img" onclick="Admin.rmImg(${i})"><i class="fas fa-times"></i></div></div>`; }); 
         }
         static rmImg(i) { this.imgs.splice(i,1); this.rImgs(); }
         
@@ -2169,8 +2074,8 @@
             let col=[]; document.querySelectorAll('#ap-colors .selected').forEach(x=>col.push(x.getAttribute('data-val')));
             
             return {
-                id: Date.now(), 
-                sku: document.getElementById('ap-sku').value || `CS-${Math.floor(1000+Math.random()*9000)}`, 
+                id: this.editingId || Date.now(), 
+                sku: document.getElementById('ap-sku') ? document.getElementById('ap-sku').value : `CS-${Math.floor(1000+Math.random()*9000)}`, 
                 name: document.getElementById('ap-name').value || "Draft Product",
                 price: parseInt(document.getElementById('ap-price').value)||0, 
                 oldPrice: parseInt(document.getElementById('ap-old').value)||0, 
@@ -2192,15 +2097,70 @@
             const p = this.getFD(); 
             if(p.price===0 || p.name==="Draft Product") return Utils.toast("Enter Valid Name & Price!", "error");
             
-            db.products.unshift(p); 
-            DB.save(db); 
-            this.init(); 
-            Utils.toast("Product Uploaded Successfully!");
+            if(this.editingId) {
+                // Update Existing
+                let idx = db.products.findIndex(x => x.id === this.editingId);
+                if(idx > -1) db.products[idx] = p;
+                Utils.toast("Product Updated Successfully!");
+            } else {
+                // Create New
+                db.products.unshift(p); 
+                Notif.add("New Arrival: " + p.name + " is now in stock!", "All");
+                Utils.toast("Product Uploaded Successfully!");
+            }
             
+            DB.save(db); 
+            this.resetForm();
+            this.init(); 
+        }
+
+        static resetForm() {
             document.querySelectorAll('#admin-add .input-box').forEach(i=>i.value=''); 
-            this.imgs=[]; 
-            this.rImgs(); 
-            this.tab('dash', document.querySelectorAll('.admin-tab')[0]);
+            this.imgs=[]; this.rImgs(); 
+            this.editingId = null;
+            document.getElementById('ap-main-title').innerText = "ADD NEW PRODUCT";
+            document.getElementById('btn-publish').innerHTML = `<i class="fas fa-check"></i> PUBLISH`;
+        }
+
+        // EDIT LOGIC
+        static rProducts() {
+            const l = document.getElementById('admin-product-list');
+            if(!l) return;
+            l.innerHTML = "";
+            db.products.forEach((p) => {
+                l.innerHTML += `
+                <div style="display:flex; align-items:center; background:var(--card-dark); padding:10px; border-radius:12px; border:1px solid var(--glass-border);">
+                    <img src="${p.images[0]}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                    <div style="flex:1;">
+                        <div style="font-size:13px; font-weight:600; color:var(--pink-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${p.name}</div>
+                        <div style="font-size:12px; color:var(--gold-main); font-weight:700;">${Utils.fmt(p.price)}</div>
+                    </div>
+                    <button class="btn-edit" onclick="Admin.editProd(${p.id})">EDIT</button>
+                </div>`;
+            });
+        }
+
+        static editProd(id) {
+            let p = db.products.find(x => x.id === id);
+            if(!p) return;
+            
+            this.editingId = p.id;
+            document.getElementById('ap-main-title').innerText = "EDIT PRODUCT";
+            document.getElementById('btn-publish').innerHTML = `<i class="fas fa-save"></i> UPDATE`;
+            
+            document.getElementById('ap-name').value = p.name;
+            document.getElementById('ap-desc').value = p.desc;
+            document.getElementById('ap-cat').value = p.category;
+            document.getElementById('ap-stock').value = p.stock;
+            document.getElementById('ap-old').value = p.oldPrice;
+            document.getElementById('ap-price').value = p.price;
+            
+            if(p.isOffer) document.getElementById('ap-flash').classList.add('selected');
+            else document.getElementById('ap-flash').classList.remove('selected');
+
+            this.imgs = [...p.images];
+            this.rImgs();
+            window.scrollTo(0,0);
         }
         
         static rOrders() {
@@ -2231,7 +2191,11 @@
                 </div>`;
             });
         }
-        static uOrd(i,v) { db.orders[i].status=v; DB.save(db); Utils.toast("Order Status Updated!"); }
+        static uOrd(i,v) { 
+            db.orders[i].status=v; DB.save(db); 
+            Notif.add("Your Order " + db.orders[i].id + " has been " + v + "!", db.orders[i].user);
+            Utils.toast("Order Status Updated!"); 
+        }
         
         static rCust() {
             const l = document.getElementById('ac-list'); l.innerHTML="";
@@ -2249,37 +2213,44 @@
     }
     window.Admin = Admin;
 
-    // --- 7. App Bootstrap ---
+    // --- 9. App Bootstrap ---
     class App {
         static nav(id) {
             document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); 
             document.getElementById(id+'-screen').classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active')); 
             let el=document.getElementById('nav-'+id); if(el) el.classList.add('active');
+            document.getElementById('notif-panel').classList.remove('active'); 
             
             if(id==='home') UI.renderHome(); 
             if(id==='wishlist') UI.rWish(); 
             if(id==='cart') Cart.render(); 
             if(id==='profile') UI.rProf();
+            window.scrollTo(0,0);
         }
         static start() {
             document.getElementById('auth-wrapper').style.display='none'; 
             document.getElementById('main-app').style.display='flex';
-            UI.buildNav();
+            UI.buildNav(); Notif.updateBadge();
             
-            if(db.currentUser.isAdmin) { 
-                this.nav('admin'); 
-                Admin.init(); 
-            } else { 
-                this.nav('home'); 
-            }
+            if(db.currentUser && db.currentUser.isAdmin) { this.nav('admin'); Admin.init(); } 
+            else { this.nav('home'); }
         }
     }
     window.App = App;
 
+    // Premium Splash Animation & Background Cloud Sync
     window.onload = () => { 
-        if(db.currentUser) App.start(); 
-        else Auth.switchView('login'); 
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                if(db && db.currentUser) App.start(); else Auth.switchView('login');
+                // Sync from cloud in background after UI is ready
+                DB.syncFromCloud();
+            }, 800);
+        }, 2000); // 2 Seconds premium glowing delay
     };
 </script>
 </body>
